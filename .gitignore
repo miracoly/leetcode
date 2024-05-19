@@ -6,7 +6,7 @@ result
 **/c/**/makefile
 **/c/**/README.md
 **/c/**/*.s
-**/c/**/test_*.c
+**/c/**/test*.c
 
 java/**/*.css
 java/**/*.gradle
