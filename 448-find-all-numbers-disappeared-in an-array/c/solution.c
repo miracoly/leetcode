@@ -10,18 +10,13 @@ int* findDisappearedNumbers(int* nums, int numsSize, int* returnSize) {
         included[nums[i]] = 1;
     }
 
+    int* result = calloc(numsSize, sizeof(*nums));
+
     *returnSize = 0;
     for (size_t i = 1; (int) i <= numsSize; ++i) {
-        if (!included[i])
-            (*returnSize)++;
-    }
-    int* result = calloc(*returnSize, sizeof(*nums));
-
-    size_t k = 0;
-    for (size_t i = 1; (int) i <= numsSize; ++i) {
         if (!included[i]) {
-            result[k] = (int) i;
-            k++;
+            result[*returnSize] = (int) i;
+            (*returnSize)++;
         }
     }
 
