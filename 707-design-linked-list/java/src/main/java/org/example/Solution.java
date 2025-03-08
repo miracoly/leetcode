@@ -1,99 +1,84 @@
 package org.example;
 
 class MyLinkedList {
-    private Node head;
-    private Node tail;
-    private int length;
+    private final Node preHead; // sentinel head
+    private int size;
 
     public MyLinkedList() {
-        length = 0;
+        preHead = new Node(0, null, new Node(0));      // dummy head
+        size = 0;
     }
 
     public int get(int index) {
-        final var node = _get(index);
-        return node == null ? -1 : node.val;
-    }
-
-    public void addAtHead(int val) {
-        final var newHead = new Node(val, null, head);
-        if (head != null) {
-            head.prev = newHead;
+        if (index < 0 || index >= size) {
+            return -1;
         }
-        head = newHead;
-        if (length == 0) tail = head;
-        length++;
-    }
-
-    public void addAtTail(int val) {
-        if (length == 0) {
-            addAtHead(val);
-            return;
-        }
-        final var newTail = new Node(val, tail, null);
-        tail.next = newTail;
-        tail = newTail;
-        length++;
-    }
-
-    public void addAtIndex(int index, int val) {
-        if (index < 0) return;
-        if (index > length) return;
-        if (index == 0) {
-            addAtHead(val);
-            return;
-        }
-        if (index == length) {
-            addAtTail(val);
-            return;
-        }
-
-        final Node cur = _get(index - 1);
-        if (cur == null) return;
-        final var node = new Node(val, cur, cur.next);
-        cur.next = node;
-        node.next.prev = node;
-        length++;
-    }
-
-    public void deleteAtIndex(int index) {
-        final var node = _get(index);
-        if (node == null) return;
-
-        final var prev = node.prev;
-        final var next = node.next;
-        if (prev == null) {
-            head = next;
-        } else {
-            prev.next = next;
-        }
-        if (next == null) {
-            tail = prev;
-        } else {
-            next.prev = prev;
-        }
-
-        length--;
-    }
-
-    private Node _get(int index) {
-        if (index < 0 || index >= length) return null;
-
-        Node cur = head;
+        Node cur = preHead.next;
         for (int i = 0; i < index; i++) {
             cur = cur.next;
         }
-        return cur;
+        return cur.val;
     }
-}
 
-class Node {
-    int val;
-    Node prev;
-    Node next;
+    public void addAtHead(int val) {
+        addAtIndex(0, val);
+    }
 
-    public Node(int val, Node prev, Node next) {
-        this.val = val;
-        this.prev = prev;
-        this.next = next;
+    public void addAtTail(int val) {
+        addAtIndex(size, val);
+    }
+
+    public void addAtIndex(int index, int val) {
+        if (index < 0 || index > size) {
+            return;
+        }
+        // Find the "previous" node (prev) where we will insert the new node
+        Node prev = preHead;
+        for (int i = 0; i < index; i++) {
+            prev = prev.next;
+        }
+        Node next = prev.next;
+
+        Node newNode = new Node(val, prev, next);
+
+        prev.next = newNode;
+        next.prev = newNode;
+
+        size++;
+    }
+
+    public void deleteAtIndex(int index) {
+        if (index < 0 || index >= size) {
+            return;
+        }
+        // Move to the node just before the node we want to delete
+        Node prev = preHead;
+        for (int i = 0; i < index; i++) {
+            prev = prev.next;
+        }
+        Node toDelete = prev.next;
+        Node next = toDelete.next;
+
+        prev.next = next;
+        next.prev = prev;
+
+        size--;
+    }
+
+    // Inner Node class for our doubly linked list
+    private static class Node {
+        int val;
+        Node prev;
+        Node next;
+
+        Node(int val) {
+            this(val, null, null);
+        }
+
+        Node(int val, Node prev, Node next) {
+            this.val = val;
+            this.prev = prev;
+            this.next = next;
+        }
     }
 }
