@@ -1,6 +1,7 @@
 .idea
 result
 *.md
+/.direnv/
 
 **/c/**/test-framework
 **/c/**/makefile
