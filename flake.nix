@@ -8,7 +8,13 @@
     pkgs = import nixpkgs {inherit system;};
   in {
     devShell.${system} = pkgs.mkShell {
-      buildInputs = with pkgs; [criterion gcc gnumake uthash];
+      buildInputs = with pkgs; [
+        criterion
+        gcc
+        gnumake
+        gtest
+        uthash
+      ];
       shellHook = ''
         bear -- make > /dev/null 2>&1
       '';
