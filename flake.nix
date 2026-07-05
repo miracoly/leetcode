@@ -1,23 +1,32 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {nixpkgs, ...}: let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs {inherit system;};
-  in {
-    devShell.${system} = pkgs.mkShell {
-      buildInputs = with pkgs; [
-        criterion
-        gcc
-        gnumake
-        gtest
-        uthash
-      ];
-      shellHook = ''
-        bear -- make > /dev/null 2>&1
-      '';
-    };
-  };
+  outputs = {
+    nixpkgs,
+    flake-utils,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {inherit system;};
+    in {
+      devShells.default = pkgs.mkShell {
+        nativeBuildInputs = with pkgs; [
+          clang-tools
+          criterion
+          gcc
+          gnumake
+          leetgo
+        ];
+        buildInputs = with pkgs; [
+          uthash
+          gtest
+        ];
+        shellHook = ''
+          bear -- make > /dev/null 2>&1
+        '';
+      };
+    });
 }
