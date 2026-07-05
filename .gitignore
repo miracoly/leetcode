@@ -3,8 +3,8 @@ result
 *.md
 /.direnv/
 
-**/c/**/test-framework
-**/c/**/makefile
-**/c/**/README.md
-**/c/**/*.s
-**/c/**/test*.c
+manual-solutions/**/c/**/test-framework
+manual-solutions/**/c/**/makefile
+manual-solutions/**/c/**/README.md
+manual-solutions/**/c/**/*.s
+manual-solutions/**/c/**/test*.c
