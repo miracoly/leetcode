@@ -1,7 +1,7 @@
 .idea
 result
-*.md
-/.direnv/
+.direnv
+**/.task
 
 manual-solutions/**/c/**/test-framework
 manual-solutions/**/c/**/makefile

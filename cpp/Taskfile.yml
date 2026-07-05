@@ -1,0 +1,74 @@
+# Taskfile for solving / debugging LeetCode C++ problems.
+# Tasks: test (leetgo), build, run, debug, clean.  Run e.g.:  task build
+#
+# Requires: go-task, leetgo, g++, gdb  (all in the flake devShell).
+version: '3'
+
+vars:
+  # >>> EDIT THIS <<< the problem you are working on, plain number, no padding.
+  P: '49'
+  # Zero-padded id that matches the folder name (49 -> 0049).
+  PID:
+    sh: printf '%04d' '{{.P}}'
+  # Resolve the problem folder from the padded id (0049 -> 0049.group-anagrams).
+  DIR:
+    sh: ls -d '{{.TASKFILE_DIR}}/{{.PID}}'* 2>/dev/null | head -1
+  SRC: '{{.DIR}}/solution.cpp'
+  BIN: '/tmp/leetcode-{{.PID}}'
+  # First testcase's input, extracted from testcases.txt (everything between
+  # the first `input:` and the following `output:` marker).
+  AWK_FIRST_INPUT: '/^output:/{f=0} f; /^input:/{f=1}'
+
+  CXX: g++
+  CXXFLAGS: >-
+    -std=c++17 -g -O0
+    -Wall -Wextra -Wpedantic -Wconversion
+    -fsanitize=address,undefined -fno-omit-frame-pointer
+    -I{{.TASKFILE_DIR}}
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  test:
+    desc: 'Run leetgo local tests for the problem set in `P`. Extra args after --, e.g. task test -- -s'
+    dir: ..                       # leetgo must run from the repo root (where leetgo.yaml lives)
+    cmds:
+      - leetgo test {{.P}} -L {{.CLI_ARGS}}
+
+  build:
+    desc: Compile the solution with debug info + Address/UB sanitizers
+    preconditions:
+      - sh: 'test -n "{{.DIR}}"'
+        msg: 'No problem folder found for P={{.P}} (looked for {{.PID}}* in {{.TASKFILE_DIR}})'
+    sources:
+      - '{{.SRC}}'
+      - '{{.TASKFILE_DIR}}/*.h'
+      - '{{.TASKFILE_DIR}}/*.hpp'
+    generates:
+      - '{{.BIN}}'
+    cmds:
+      - '{{.CXX}} {{.CXXFLAGS}} {{.SRC}} -o {{.BIN}}'
+
+  run:
+    desc: Build, then run the FIRST testcase under sanitizers (quick sanity check)
+    deps: [build]
+    cmds:
+      - awk '{{.AWK_FIRST_INPUT}}' '{{.DIR}}/testcases.txt' | '{{.BIN}}'
+
+  debug:
+    desc: Build, then launch gdb (TUI) with the first testcase piped to stdin
+    deps: [build]
+    cmds:
+      - awk '{{.AWK_FIRST_INPUT}}' '{{.DIR}}/testcases.txt' > '{{.BIN}}.in'
+      # Runs immediately and stops at any crash/UB. To step instead: press Ctrl-C or
+      # `kill`, set a breakpoint (e.g. `b Solution::groupAnagrams`), then `r < {{.BIN}}.in`.
+      - gdb -q -tui -ex 'run < {{.BIN}}.in' '{{.BIN}}'
+
+  clean:
+    desc: Remove built binaries for problem P
+    cmds:
+      - rm -f '{{.BIN}}' '{{.BIN}}.in'
