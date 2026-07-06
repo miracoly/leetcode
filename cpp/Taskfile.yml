@@ -6,7 +6,7 @@ version: "3"
 
 vars:
   # >>> EDIT THIS <<< the problem you are working on, plain number, no padding.
-  P: "238"
+  P: "36"
   # Zero-padded id that matches the folder name (49 -> 0049).
   PID:
     sh: printf '%04d' '{{.P}}'
