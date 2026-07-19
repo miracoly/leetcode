@@ -6,7 +6,7 @@ version: "3"
 
 vars:
   # >>> EDIT THIS <<< the problem you are working on, plain number, no padding.
-  P: "853"
+  P: "84"
   # Zero-padded id that matches the folder name (49 -> 0049).
   PID:
     sh: printf '%04d' '{{.P}}'
@@ -60,13 +60,21 @@ tasks:
       - awk '{{.AWK_FIRST_INPUT}}' '{{.DIR}}/testcases.txt' | '{{.BIN}}'
 
   debug:
-    desc: Build, then launch gdb (TUI) with the first testcase piped to stdin
+    desc: Build, then launch gdb with the first testcase wired to stdin (stops at the prompt)
     deps: [build]
     cmds:
       - awk '{{.AWK_FIRST_INPUT}}' '{{.DIR}}/testcases.txt' > '{{.BIN}}.in'
-      # Runs immediately and stops at any crash/UB. To step instead: press Ctrl-C or
-      # `kill`, set a breakpoint (e.g. `b Solution::groupAnagrams`), then `r < {{.BIN}}.in`.
-      - gdb -q -tui -ex 'run < {{.BIN}}.in' '{{.BIN}}'
+      # Stops at the gdb prompt so you can set breakpoints first. `set args < FILE`
+      # pre-wires the testcase to stdin, so you just type `run` (no redirection needed).
+      # detect_leaks=0: LeakSanitizer's exit-time scan needs ptrace, which gdb already
+      # holds, so it aborts fatally under the debugger. Disable just the leak check here.
+      # -tui opens the split view: source window on top, gdb prompt below.
+      # Toggle it at runtime any time with Ctrl-X A; if the display gets garbled,
+      # redraw with Ctrl-L.
+      - gdb -q -tui
+        -ex 'set environment ASAN_OPTIONS=detect_leaks=0'
+        -ex 'set args < {{.BIN}}.in'
+        '{{.BIN}}'
 
   clean:
     desc: Remove built binaries for problem P
