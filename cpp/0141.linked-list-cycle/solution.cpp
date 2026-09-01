@@ -12,13 +12,12 @@ class Solution {
  public:
   bool hasCycle(ListNode* head) {
     if (!head) return false;
-    std::unordered_set<ListNode*> visited{};
-    ListNode* curr{head};
-    while (curr->next) {
-      visited.insert(curr);
-      if (visited.contains(curr->next)) return true;
-
-      curr = curr->next;
+    ListNode* slow{head};
+    ListNode* fast{head};
+    while (fast && fast->next) {
+      fast = fast->next->next;
+      slow = slow->next;
+      if (fast == slow) return true;
     }
     return false;
   }
